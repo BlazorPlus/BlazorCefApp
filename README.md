@@ -13,3 +13,5 @@ Working on WPF/WinForms/ActveX integration
 Working on easy-to-use API
 
 Progress , WinForms OK , WPF failed..
+
+Progress , Introp OK , improving...

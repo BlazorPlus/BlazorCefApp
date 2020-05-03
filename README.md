@@ -15,3 +15,5 @@ Working on easy-to-use API
 Progress , WinForms OK , WPF failed..
 
 Progress , Introp OK , improving...
+
+Progress , WPF works, adding more features

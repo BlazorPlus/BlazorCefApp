@@ -21,3 +21,5 @@ Progress , WPF works, adding more features
 Progress , working on v8context
 
 Progress , port to .net framework 4.6 
+
+Progress , default download manager 

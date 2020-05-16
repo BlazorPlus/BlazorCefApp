@@ -1,0 +1,33 @@
+﻿@page "/"
+
+<div style="text-align:center">
+	<h2>BlazorCefApp!</h2>
+	<p>
+		Run Blazor server side as a window application.
+		<br />
+		<button class="btn btn-info" style="width:100px" @onclick="()=>BlazorSession.Current.ShowDevTools()">DevTools</button>
+		<button class="btn btn-info" style="width:100px" onclick="window.close()">JSClose</button>
+		<button class="btn btn-info" style="width:100px" @onclick="()=>BlazorSession.Current.CloseBrowser()">CloseForm</button>
+		<button class="btn btn-info" style="width:100px" @onclick="()=>CefLite.CefWin.QuitWindowsEventLoop()">CefQuit</button>
+		@*<button class="btn btn-info" style="width:100px" @onclick="()=>System.Windows.Forms.Application.Exit()">AppExit</button>*@
+
+	</p>
+	<hr />
+</div>
+
+@{
+	RenderFragment RenderItem<T>(string htmlcode)
+		where T : ComponentBase
+	{
+		return @<div class="main-menu-item" @onclick="() => { BlazorSession.Current.ShowDialog<T>(null); }">@((MarkupString)htmlcode)</div>;
+}
+}
+
+<div style="display:flex;flex-direction:row;flex-wrap:wrap;">
+
+	@(RenderItem<Demos.Notepad.Notepad>("Notepad"));
+
+
+</div>
+
+

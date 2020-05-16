@@ -1,0 +1,192 @@
+﻿@inherits DemoDialogBase
+
+@inject BlazorSession bses
+
+@code{
+
+	string currentFilePath;
+	string originalTextCode = "";
+	string currentTextCode = "";
+
+
+	PlusControl textarea;
+	void textarea_ready(BlazorDomTree bdt)
+	{
+		textarea = bdt.Root;
+		textarea.OnChanging(delegate
+		{
+			currentTextCode = textarea.Value;
+			StateHasChanged();
+		});
+		textarea.SetFocus(1);
+	}
+
+	void WriteToFile(string filepath)
+	{
+		try
+		{
+			System.IO.File.WriteAllText(filepath, currentTextCode);
+			originalTextCode = currentTextCode;
+		}
+		catch (Exception x)
+		{
+			bses.ConsoleError(x.ToString());
+			bses.Alert("Error", x.Message);
+		}
+	}
+
+	void ShowOpenFileDialog()
+	{
+		if (string.IsNullOrWhiteSpace(currentTextCode) || originalTextCode == currentTextCode)
+		{
+			ShowOpenFileDialogImpl();
+			return;
+		}
+
+		bses.Confirm("Open", "Open another file without saving text?", (result) =>
+		{
+			if (result == true)
+				ShowOpenFileDialogImpl();
+			else
+				textarea.SetFocus();
+		});
+	}
+
+	void ShowOpenFileDialogImpl()
+	{
+
+		bses.RunBrowser(browser =>
+		{
+			var form = browser.FindForm();
+			using (System.Windows.Forms.OpenFileDialog dialog = new System.Windows.Forms.OpenFileDialog())
+			{
+				if (currentFilePath != null)
+					dialog.FileName = currentFilePath;
+				dialog.Filter = "Text Files|*.txt";
+				var res = dialog.ShowDialog(form);
+				if (res != System.Windows.Forms.DialogResult.OK)
+					return;
+
+				bses.InvokeInRenderThread(delegate
+				{
+					string txt;
+					string openfilepath = dialog.FileName;
+					try
+					{
+						txt = System.IO.File.ReadAllText(openfilepath);
+					}
+					catch (Exception x)
+					{
+						bses.ConsoleError(x.ToString());
+						bses.Alert("Error", x.Message);
+						return;
+					}
+
+					currentFilePath = openfilepath;
+					originalTextCode = currentTextCode = txt;
+					textarea.Value = txt;
+					textarea.SetFocus(1);
+					StateHasChanged();
+					bses.Toast("Load " + System.IO.Path.GetFileName(currentFilePath));
+				});
+			}
+		});
+	}
+	void ShowSaveFileDialog()
+	{
+		bses.RunBrowser(browser =>
+		{
+			var form = browser.FindForm();
+			using (System.Windows.Forms.SaveFileDialog dialog = new System.Windows.Forms.SaveFileDialog())
+			{
+				if (currentFilePath != null)
+					dialog.FileName = currentFilePath;
+				dialog.Filter = "Text Files|*.txt";
+				var res = dialog.ShowDialog(form);
+				if (res != System.Windows.Forms.DialogResult.OK)
+					return;
+
+				bses.InvokeInRenderThread(delegate
+				{
+					string savefilepath = dialog.FileName;
+					try
+					{
+						WriteToFile(savefilepath);
+					}
+					catch (Exception x)
+					{
+						bses.ConsoleError(x.ToString());
+						bses.Alert("Error", x.Message);
+						return;
+					}
+
+					currentFilePath = savefilepath;
+					originalTextCode = currentTextCode;
+					textarea.SetFocus(1);
+					StateHasChanged();
+					bses.Toast("Save " + System.IO.Path.GetFileName(currentFilePath));
+				});
+			}
+		});
+	}
+	void SaveCurrentFile()
+	{
+		if (currentFilePath == null)
+			ShowSaveFileDialog();
+		else
+			WriteToFile(currentFilePath);
+	}
+
+	void ExploreCurrentFile()
+	{
+		System.Diagnostics.Process.Start("Explorer", "/select, \""+currentFilePath+"\"");
+	}
+
+	public override void OnCancel(string mode)
+	{
+
+		if (string.IsNullOrWhiteSpace(currentTextCode) || originalTextCode == currentTextCode)
+		{
+			Close();
+			return;
+		}
+
+		bses.Confirm("Quit", "Quit without saving text?", (result) =>
+		{
+			if (result == true)
+				Close();
+			else
+				textarea.SetFocus();
+		});
+
+	}
+
+	void Dialog_KeyPress(KeyboardEventArgs args)
+	{
+		bses.ConsoleLog(System.Text.Json.JsonSerializer.Serialize(args));
+		if (args.CtrlKey && args.Code == "KeyS")
+		{
+			SaveCurrentFile();
+		}
+	}
+
+}
+
+<div class="dialog-content-full" @onkeypress="Dialog_KeyPress">
+	<div style="display:flex;flex-direction:row;">
+		<button onclick="history.back()">Back</button>
+		<button @onclick="ShowOpenFileDialog">OpenFileDialog</button>
+		<button @onclick="ShowSaveFileDialog">SaveFileDialog</button>
+		<div style="flex:99999;text-align:center;padding:3px;">
+			@(currentFilePath==null?"Untitled":System.IO.Path.GetFileName(currentFilePath))
+			<span style="color:red">@(originalTextCode != currentTextCode?"*":"")</span>
+		</div>
+		@if (currentFilePath != null)
+		{
+			<button @onclick="ExploreCurrentFile">Explore</button>
+		}
+		<button @onclick="SaveCurrentFile">SaveNow(CTRL+S)</button>
+	</div>
+	<BlazorDomTree TagName="textarea" OnRootReady="textarea_ready" spellcheck="false" place-holder="Type text here.." style="width:100%;height:100%;overflow-y:scroll;resize:none" />
+</div>
+

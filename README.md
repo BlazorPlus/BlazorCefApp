@@ -1,10 +1,10 @@
 # BlazorCefApp
 
-Build client side application by CEF , Asp.Net Core , Blazor server side
+Build Desktop application by CEF , Asp.Net Core , Blazor server side
 
-Windows only because plan to integrate all features from WPF/WinForms/ActiveX 
+![Screenshot](https://github.com/BlazorPlus/BlazorCefApp/raw/master/demoscreenshots/demo-index.png)
 
-# How it works. 
+# Now it works
 
 developer must copy the Release/Resources files from
 
@@ -14,14 +14,7 @@ to app /chromium/ folder
 
 ----
 
-Base CEF library : CefLite : https://github.com/BlazorPlus/CefLite
-
-----
-
-The prototype is done
-
-![Screenshot](https://github.com/BlazorPlus/BlazorCefApp/raw/master/demoscreenshots/demo-index.png)
-
+CefLite source code : https://github.com/BlazorPlus/CefLite
 
 ----
 

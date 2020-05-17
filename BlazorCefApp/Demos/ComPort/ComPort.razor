@@ -152,20 +152,30 @@
 }
 
 <style>
-	.msgitem-send{
-		background-color:lightpink;
-		color:blue;
-		font-weight:bold;
+	.msgitem-send {
+		background-color: lightpink;
+		color: blue;
+		font-weight: bold;
 	}
-	.msgitem-full{
-		color:red;
+
+	.msgitem-full {
+		color: red;
 	}
 </style>
 
 <div class="dialog-content-full">
 	<div style="display:flex;flex-direction:row;">
 		<button onclick="history.back()">Back</button>
-		<div style="flex:99999;text-align:center;padding:3px;">ComPort</div>
+		<div style="flex:99999;text-align:center;padding:3px;">
+			@if (!_sport.IsOpen)
+			{
+				<span>ComPort</span>
+			}
+			else
+			{
+				<span>@_sport.PortName @_sport.BaudRate</span>
+			}
+		</div>
 	</div>
 	<div style="flex:99999;overflow-y:hidden;position:relative;display:flex;flex-direction:column;border-top:1px solid gray;">
 		@if (!_sport.IsOpen)

@@ -1,0 +1,195 @@
+﻿@inherits DemoDialogBase
+@implements IDisposable
+
+@inject BlazorSession bses
+
+@code {
+
+	bool _pageDisposed;
+	System.IO.Ports.SerialPort _sport = new System.IO.Ports.SerialPort();
+
+	protected override void OnInitialized()
+	{
+		base.OnInitialized();
+		_sport.Encoding = System.Text.Encoding.UTF8;
+		_sport.ReadTimeout = 2000;
+		_sport.BaudRate = 115200;
+		_sport.PortName = System.IO.Ports.SerialPort.GetPortNames().OrderByDescending(v => v).First();
+	}
+
+	void IDisposable.Dispose()
+	{
+		_pageDisposed = true;
+		if (_sport.IsOpen) _sport.Close();
+		_sport = null;
+	}
+
+	byte[] buffer = new byte[65536];
+	int buflen = 0;
+
+	async Task PlayPortAsync()
+	{
+		try
+		{
+			_sport.Open();
+		}
+		catch (Exception x)
+		{
+			bses.Alert("Error", x.ToString());
+			return;
+		}
+
+		try
+		{
+			while (true)
+			{
+				int rc = await _sport.BaseStream.ReadAsync(buffer, buflen, buffer.Length - buflen);
+				if (rc == 0)
+				{
+					if (_pageDisposed)
+						return;
+					await Task.Delay(100);
+					continue;
+				}
+
+				buflen += rc;
+
+			ParseAgain:
+				int pos = Array.IndexOf(buffer, (byte)13, 0, buflen);
+				if (pos != -1)
+				{
+					string line = _sport.Encoding.GetString(buffer, 0, pos);
+					CreateMsgItem().CssClass("msgitem-line").InnerText(line.Trim());
+					int newlen = buflen - pos - 1;
+					if (newlen > 0)
+					{
+						Buffer.BlockCopy(buffer, pos + 1, buffer, 0, newlen);
+						buflen = newlen;
+						goto ParseAgain;
+					}
+					buflen = 0;
+				}
+				else if (buflen == buffer.Length)
+				{
+					CreateMsgItem().CssClass("msgitem-full").InnerText("buffer full , ignore " + buflen + " bytes");
+					buflen = 0;
+				}
+				else if (buflen == 1 && buffer[0] == 10)
+				{
+					buflen = 0;//ignore '\r'
+				}
+
+				StateHasChanged();
+			}
+		}
+		catch (Exception x)
+		{
+			if (_pageDisposed)
+				return;
+			bses.Alert("Error", x.ToString());
+			_sport.Close();
+			StateHasChanged();
+		}
+
+	}
+
+	PlusControl msgpanel;
+	void msgpanel_ready(BlazorDomTree bdt)
+	{
+		msgpanel = bdt.Root;
+	}
+
+	PlusControl CreateMsgItem()
+	{
+		PlusControl newdiv;
+		lock (msgpanel)
+		{
+			while (msgpanel.GetChildCount() > 200)
+				msgpanel.RemoveChild(msgpanel.GetChildAt(0));
+			newdiv = msgpanel.Create("div");
+		}
+		msgpanel.Eval("var p=this;setTimeout(function(){p.scrollTop=p.scrollHeight},1)");
+		return newdiv;
+	}
+
+	PlusControl inp;
+	void inp_ready(BlazorDomTree bdt)
+	{
+		inp = bdt.Root;
+		inp.OnEnterKey(delegate
+		{
+			TrySend();
+			StateHasChanged();
+		});
+	}
+
+	void TrySend()
+	{
+		string str = inp.Value;
+		if (string.IsNullOrEmpty(str))
+		{
+			bses.Toast("type something..");
+			return;
+		}
+
+		byte[] data = _sport.Encoding.GetBytes(str + "\n");
+		try
+		{
+			_sport.BaseStream.Write(data, 0, data.Length);
+		}
+		catch (Exception x)
+		{
+			bses.Alert("Error", x.ToString());
+			return;
+		}
+
+		CreateMsgItem().CssClass("msgitem-send").InnerText(str);
+
+		inp.Value = "";
+		inp.SetFocus();
+	}
+
+}
+
+<style>
+	.msgitem-send{
+		background-color:lightpink;
+		color:blue;
+		font-weight:bold;
+	}
+	.msgitem-full{
+		color:red;
+	}
+</style>
+
+<div class="dialog-content-full">
+	<div style="display:flex;flex-direction:row;">
+		<button onclick="history.back()">Back</button>
+		<div style="flex:99999;text-align:center;padding:3px;">ComPort</div>
+	</div>
+	<div style="flex:99999;overflow-y:hidden;position:relative;display:flex;flex-direction:column;border-top:1px solid gray;">
+		@if (!_sport.IsOpen)
+		{
+			<EditForm Model="_sport">
+				<table>
+					<tr><td>PortName</td><td><InputText @bind-Value="_sport.PortName" /></td></tr>
+					<tr><td>BaudRate</td><td><InputNumber @bind-Value="_sport.BaudRate" /></td></tr>
+					<tr><td></td><td><button @onclick="PlayPortAsync">PlayPortAsync</button></td></tr>
+				</table>
+			</EditForm>
+		}
+		else
+		{
+			@if (buflen > 1024)
+			{
+				<div style="position:absolute;width:100%;background-color:lightyellow;overflow:hidden;white-space:nowrap;">incoming bytes : @buflen @BitConverter.ToString(buffer, 0, buflen)</div>
+			}
+			<BlazorDomTree TagName="div" OnRootReady="msgpanel_ready" style="flex:99999;overflow-y:scroll" />
+
+			<div style="display:flex;flex-direction:row">
+				<BlazorDomTree TagName="input" type="text" place-holder="type something..." style="flex:99999" OnRootReady="inp_ready" />
+				<button @onclick="TrySend">SEND</button>
+			</div>
+		}
+	</div>
+</div>

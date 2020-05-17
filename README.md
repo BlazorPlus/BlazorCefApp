@@ -20,7 +20,7 @@ Base CEF library : CefLite : https://github.com/BlazorPlus/CefLite
 
 The prototype is done
 
-![Screenshot](https://github.com/BlazorPlus/BlazorCefWin/raw/master/demoscreenshots/demo-index.png)
+![Screenshot](https://github.com/BlazorPlus/BlazorCefApp/raw/master/demoscreenshots/demo-index.png)
 
 
 ----

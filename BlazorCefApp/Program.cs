@@ -80,7 +80,7 @@ namespace BlazorCefApp
 		{
 			string startUrl = aspnetcoreUrls.Split(';')[0];
 			DefaultBrowserForm form = CefWin.OpenBrowser(startUrl);
-			form.Width = 1555;
+			form.Width = 1120;
 			form.Height = 777;
 			form.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
 			//CefWin.CenterForm(form);

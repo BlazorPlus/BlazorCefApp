@@ -1,8 +1,10 @@
 ﻿@page "/"
 
-<div style="text-align:center">
+<div style="text-align:center;padding-top:18px;">
 	<h2>BlazorCefApp!</h2>
 	<p>
+		<a href="https://github.com/BlazorPlus/BlazorCefApp" target="_blank">https://github.com/BlazorPlus/BlazorCefApp</a>
+		<br/>
 		Run Blazor server side as a window application.
 		<br />
 		<button class="btn btn-info" style="width:100px" @onclick="()=>BlazorSession.Current.ShowDevTools()">DevTools</button>
@@ -16,22 +18,24 @@
 </div>
 
 @{
-	RenderFragment RenderItem<T>(string htmlcode)
+	RenderFragment RenderItem<T>(string title, string comment)
 		where T : ComponentBase
 		=>
 	@<div class="main-menu-item" @onclick="() => { BlazorSession.Current.ShowDialog<T>(null); }">
-		@((MarkupString)htmlcode)
+		 <div class="main-menu-item-title">@title</div>
+		 <div class="main-menu-item-comment">@comment</div>
 	</div>
 	;
 }
 
-<div style="display:flex;flex-direction:row;flex-wrap:wrap;">
+<div class="main-menu" style="display:flex;flex-direction:row;flex-wrap:wrap;">
 
-	@(RenderItem<Demos.Notepad.Notepad>("Notepad"))
-	@(RenderItem<Demos.RegView.RegView>("RegView"))
-	@(RenderItem<Demos.ComPort.ComPort>("ComPort"))
-	@(RenderItem<Demos.ExeInfo.ExeInfo>("ExeInfo"))
-	@(RenderItem<Demos.ProcList.ProcList>("ProcList"))
+	@(RenderItem<Demos.Notepad.Notepad>("Notepad","OpenFileDialog and SaveFileDialog"))
+	@(RenderItem<Demos.RegView.RegView>("RegView", "Local Registry and TreeView"))
+	@(RenderItem<Demos.ComPort.ComPort>("ComPort", "Serial Port for Hardware"))
+	@(RenderItem<Demos.ExeInfo.ExeInfo>("ExeInfo", "Show more useful information"))
+	@(RenderItem<Demos.ProcList.ProcList>("ProcList", "Local Process GridView"))
+	@(RenderItem<Demos.PlayMp4.PlayMp4>("PlayMp4", "ActiveX MediaPlayer"))
 
 
 </div>

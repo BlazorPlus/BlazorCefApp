@@ -180,7 +180,7 @@
 	<div style="flex:99999;overflow-y:hidden;position:relative;display:flex;flex-direction:column;border-top:1px solid gray;">
 		@if (!_sport.IsOpen)
 		{
-			<EditForm Model="_sport">
+			<EditForm Model="_sport" style="margin:64px auto 0 auto">
 				<table>
 					<tr><td>PortName</td><td><InputText @bind-Value="_sport.PortName" /></td></tr>
 					<tr><td>BaudRate</td><td><InputNumber @bind-Value="_sport.BaudRate" /></td></tr>

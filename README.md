@@ -4,27 +4,23 @@ Build client side application by CEF , Asp.Net Core , Blazor server side
 
 Windows only because plan to integrate all features from WPF/WinForms/ActiveX 
 
+# How it works. 
+
+developer must copy the Release/Resources files from
+
+http://opensource.spotify.com/cefbuilds/cef_binary_81.2.24%2Bgc0b313d%2Bchromium-81.0.4044.113_windows32_client.tar.bz2
+
+to app /chromium/ folder
+
+----
+
+Base CEF library : CefLite : https://github.com/BlazorPlus/CefLite
+
 ----
 
 The prototype is done
 
-Working on WPF/WinForms/ActveX integration 
-
-Working on easy-to-use API
-
-Progress , WinForms OK , WPF failed..
-
-Progress , Introp OK , improving...
-
-Progress , WPF works, adding more features
-
-Progress , working on v8context
-
-Progress , port to .net framework 4.6 
-
-Progress , default download manager 
-
-Progress , allow execute an dynamic code/dll with host/pkt settings
+![Screenshot](https://github.com/BlazorPlus/BlazorCefWin/raw/master/demoscreenshots/demo-index.png)
 
 
 ----

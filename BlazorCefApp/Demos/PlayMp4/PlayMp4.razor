@@ -1,0 +1,126 @@
+﻿@inherits DemoDialogBase
+
+@inject BlazorSession bses
+
+@inject Microsoft.AspNetCore.Hosting.IWebHostEnvironment whe
+
+
+@code{
+
+	BlazorSession bs = BlazorSession.Current;
+
+	//  http://w3schools.sinsixx.com/media/media_playerref.asp.htm
+
+	void MediaPlayer1()
+	{
+		bses.RunBrowser(browser =>
+		{
+			string mp4file = System.IO.Path.Combine(whe.WebRootPath, "demo.mp4");
+
+			//Windows Media Player 6.4 (classic)
+			//type lib name "MediaPlayer"
+			//VS command : tlbimp C:\Windows\system32\msdxm.tlb /out:d:\temp\msdxm_out.dll
+			Type type = Type.GetTypeFromProgID("MediaPlayer.MediaPlayer.1");
+			Console.WriteLine(type.GUID);   // 22d6f312-b0f6-11d0-94ab-0080c74c7e95
+			System.Windows.Forms.Form form = new System.Windows.Forms.Form();
+			using (MyAxControl player = new MyAxControl(type))
+			{
+				form.Controls.Add(player);
+
+				System.Threading.SynchronizationContext.Current.Post(delegate
+				{
+					try
+					{
+						//TODO: sometimes throw exception , method not found
+						type.InvokeMember("Open", System.Reflection.BindingFlags.InvokeMethod, null, player.GetOcx(), new object[] { mp4file });
+					}
+					catch (Exception x)
+					{
+						Console.WriteLine(x);
+					}
+					//form.WindowState = System.Windows.Forms.FormWindowState.Maximized;
+				}, null);
+
+				form.Text = "Media Player 6.4";
+				form.MinimumSize = new System.Drawing.Size(400, 300);
+				form.Size = new System.Drawing.Size(800, 600);
+				form.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
+				form.ShowDialog(browser.FindForm());
+			}
+		});
+
+	}
+
+	void MediaPlayer7()
+	{
+
+		bses.RunBrowser(browser =>
+		{
+			string mp4file = System.IO.Path.Combine(whe.WebRootPath, "demo.mp4");
+
+			//Windows Media Player 7 or later
+			//tlbimp C:\Windows\system32\wmp.dll /out:d:\temp\wmp_out.dll
+			//type lib name "WMPLib"
+			//https://docs.microsoft.com/en-us/windows/win32/wmp/player-object
+			Type type = Type.GetTypeFromProgID("WMPlayer.OCX");
+			Console.WriteLine(type.GUID);   // 6bf52a52-394a-11d3-b153-00c04f79faa6
+			System.Windows.Forms.Form form = new System.Windows.Forms.Form();
+			using (MyAxControl player = new MyAxControl(type))
+			{
+				form.Controls.Add(player);
+
+				System.Threading.SynchronizationContext.Current.Post(delegate
+				{
+					try
+					{
+						//TODO: sometimes throw exception , method not found
+						type.InvokeMember("URL", System.Reflection.BindingFlags.SetProperty, null, player.GetOcx(), new object[] { mp4file });
+					}
+					catch (Exception x)
+					{
+						Console.WriteLine(x);
+					}
+					//form.WindowState = System.Windows.Forms.FormWindowState.Maximized;
+				}, null);
+
+				form.Text = "Media Player 7+";
+				form.MinimumSize = new System.Drawing.Size(400, 300);
+				form.Size = new System.Drawing.Size(800, 600);
+				form.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
+				form.ShowDialog(browser.FindForm());
+			}
+
+		});
+	}
+
+	class MyAxControl : System.Windows.Forms.AxHost
+	{
+		public MyAxControl(Type type) : base(type.GUID.ToString())
+		{
+			this.Dock = System.Windows.Forms.DockStyle.Fill;
+		}
+	}
+
+}
+
+<div class="dialog-content-full">
+	<div style="display:flex;flex-direction:row;">
+		<button onclick="history.back()">Back</button>
+		<div style="flex:99999;text-align:center;padding:3px;">
+			WinForms Media Player
+		</div>
+	</div>
+	<div class="playmp4" style="flex:99999;padding:10px;overflow-y:scroll;border-top:1px solid gray;">
+		<p style="text-align:center">
+			By default , the libcef.dll from <a href="http://opensource.spotify.com/cefbuilds/index.html">http://opensource.spotify.com/cefbuilds/index.html</a> does not support H264 .
+			<br />
+			Developer either compile custom libcef.dll to support it ,
+			Or use the ActiveX MediaPlayer in new window
+		</p>
+		<hr />
+		<p style="text-align:center">
+			<button class="btn btn-primary" @onclick="MediaPlayer1">MediaPlayer1</button>
+			<button class="btn btn-primary" @onclick="MediaPlayer7">MediaPlayer7</button>
+		</p>
+	</div>
+</div>

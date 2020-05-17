@@ -194,7 +194,7 @@
 			{
 				<div style="position:absolute;width:100%;background-color:lightyellow;overflow:hidden;white-space:nowrap;">incoming bytes : @buflen @BitConverter.ToString(buffer, 0, buflen)</div>
 			}
-			<BlazorDomTree TagName="div" OnRootReady="msgpanel_ready" style="flex:99999;overflow-y:scroll" />
+			<BlazorDomTree TagName="div" OnRootReady="msgpanel_ready" style="flex:99999;overflow-y:scroll;user-select:text;" />
 
 			<div style="display:flex;flex-direction:row">
 				<BlazorDomTree TagName="input" type="text" place-holder="type something..." style="flex:99999" OnRootReady="inp_ready" />

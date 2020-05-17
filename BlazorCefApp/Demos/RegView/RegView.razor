@@ -1,0 +1,210 @@
+﻿@inherits DemoDialogBase
+
+@inject BlazorSession bses
+
+@code{
+
+	Microsoft.Win32.RegistryKey selectedKey;
+	string selectedHTML;
+
+	abstract class VirtualNode
+	{
+		public Microsoft.Win32.RegistryKey RegKey { get; set; }
+		public string SomethingToSayHTML { get; set; }
+		public abstract string GetText();
+		public abstract IReadOnlyList<VirtualNode> GetSubNodes();
+	}
+	class MyComputerNode : VirtualNode
+	{
+		public override string GetText() => "MyComputer";
+
+		public override IReadOnlyList<VirtualNode> GetSubNodes()
+		{
+			List<VirtualNode> list = new List<VirtualNode>();
+			list.Add(new RegistryKeyNode(Microsoft.Win32.Registry.ClassesRoot));
+			list.Add(new RegistryKeyNode(Microsoft.Win32.Registry.CurrentUser));
+			list.Add(new RegistryKeyNode(Microsoft.Win32.Registry.LocalMachine));
+			list.Add(new RegistryKeyNode(Microsoft.Win32.Registry.Users));
+			list.Add(new RegistryKeyNode(Microsoft.Win32.Registry.CurrentConfig));
+			return list;
+		}
+	}
+	class RegistryKeyNode : VirtualNode
+	{
+		string _kname;
+		public RegistryKeyNode(Microsoft.Win32.RegistryKey key)
+		{
+			RegKey = key;
+			_kname = key.Name;
+			int lp = _kname.LastIndexOf('\\');
+			if (lp != -1) _kname = _kname.Substring(lp + 1);
+		}
+
+		public override string GetText() => _kname;
+
+		public override IReadOnlyList<VirtualNode> GetSubNodes()
+		{
+			List<VirtualNode> list = new List<VirtualNode>();
+			foreach (string skn in RegKey.GetSubKeyNames())
+			{
+				try
+				{
+					var sk = RegKey.OpenSubKey(skn);
+					list.Add(new RegistryKeyNode(sk));
+				}
+				catch (Exception x)
+				{
+					list.Add(new ErrorKeyNode(skn, x));
+				}
+			}
+			return list;
+		}
+	}
+	class ErrorKeyNode : VirtualNode
+	{
+		string _name;
+		public ErrorKeyNode(string name, Exception x)
+		{
+			_name = name;
+			SomethingToSayHTML = "<pre>" + System.Text.Encodings.Web.HtmlEncoder.Default.Encode(x.ToString()) + "</pre>";
+		}
+		public override string GetText() => _name;
+
+		public override IReadOnlyList<VirtualNode> GetSubNodes()
+		{
+			return Array.Empty<VirtualNode>();
+		}
+	}
+
+	PlusControl _lastSelectedControl;
+
+	void leftpanel_ready(BlazorDomTree bdt)
+	{
+		BuildTreeNode(bdt.Root, new MyComputerNode(), 0);
+	}
+
+	void BuildTreeNode(PlusControl container, VirtualNode vnode, int level)
+	{
+		PlusControl table = container.Create("table class='regview-treenode'");
+
+		PlusControl tr = table.Create("tr class='regview-trnode'");
+		PlusControl td0 = tr.Create("td  class='regview-left' style='width:20px;'");
+		PlusControl icon = td0.Create("span class='oi oi-plus'");
+		PlusControl td1 = tr.Create("td class='regview-right'");
+		PlusControl spantext = td1.Create("span").InnerText(vnode.GetText());
+
+		PlusControl tr1 = table.Create("tr class='regview-trsubnodes' style='display:none'");
+		tr1.Create("td class='regview-left'");
+		PlusControl subtd = tr1.Create("td class='regview-right'");
+
+		void Toggle()
+		{
+			if (tr1.GetStyle("display") == "none")
+			{
+				if (subtd.GetChildCount() == 0)
+				{
+					var ns = vnode.GetSubNodes();
+					if (ns.Count > 100)
+					{
+						bses.Toast("Opening " + ns.Count + " nodes");
+						bses.FlushToClient();
+					}
+					foreach (var subnode in ns)
+					{
+						BuildTreeNode(subtd, subnode, level + 1);
+					}
+				}
+
+				icon.CssClass("oi oi-minus");
+				tr1.SetStyle("display", "");
+			}
+			else
+			{
+				icon.CssClass("oi oi-plus");
+				tr1.SetStyle("display", "none");
+			}
+		}
+
+		if (level == 0) Toggle();
+
+		icon.OnClick((s, e) => Toggle());
+		spantext.OnDoubleClick((s, e) => Toggle());
+		spantext.OnClick(delegate
+		{
+			if (_lastSelectedControl != null) _lastSelectedControl.RemoveClass("regview-td-selected");
+			td1.AddClass("regview-td-selected");
+			_lastSelectedControl = td1;
+			selectedKey = vnode.RegKey;
+			selectedHTML = vnode.SomethingToSayHTML;
+			StateHasChanged();
+		});
+
+	}
+
+}
+
+<style>
+	.regview-td-selected {
+		background-color: #ccc;
+	}
+	.regview-tree {
+		max-width: 50%;
+		overflow-x: auto;
+	}
+	.regview-tree, .regview-list {
+		height: 100%;
+		overflow-y: scroll;
+		padding: 5px;
+	}
+		.regview-list table th {
+			border: 1px solid #999;
+			padding:2px 5px;
+		}
+</style>
+
+<div class="dialog-content-full">
+	<div style="display:flex;flex-direction:row;">
+		<button onclick="history.back()">Back</button>
+		<div style="flex:99999;text-align:center;padding:3px;">RegView</div>
+	</div>
+	<div style="flex:99999;overflow-y:hidden;display:flex;flex-direction:row;border-top:1px solid gray;">
+		<BlazorDomTree class="regview-tree" OnRootReady="leftpanel_ready"></BlazorDomTree>
+		<div class="regview-list" style="flex:99999;">
+			@if (selectedKey != null)
+			{
+				string[] vnarr = null;
+				try
+				{
+					vnarr = selectedKey.GetValueNames();
+				}
+				catch (Exception x)
+				{
+					<pre>@x.ToString()</pre>
+				}
+				@if (vnarr != null)
+				{
+					<table>
+						<tr><th>Name</th><th>Type</th><th>Data</th></tr>
+						@foreach (string vname in vnarr)
+						{
+							string vt = null;
+							object val = null;
+							try
+							{
+								val = selectedKey.GetValue(vname);
+								vt = val.GetType().Name;
+							}
+							catch (Exception x)
+							{
+								vt = "Error";
+								val = x.Message;
+							}
+							<tr><td>@(string.IsNullOrEmpty(vname)?"(DEFAULT)":vname)</td><td>@vt</td><td>@val</td></tr>
+						}
+					</table>
+				}
+			}
+			@((MarkupString)selectedHTML)
+		</div>
+	</div>
+</div>

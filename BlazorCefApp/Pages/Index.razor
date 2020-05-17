@@ -18,14 +18,19 @@
 @{
 	RenderFragment RenderItem<T>(string htmlcode)
 		where T : ComponentBase
-	{
-		return @<div class="main-menu-item" @onclick="() => { BlazorSession.Current.ShowDialog<T>(null); }">@((MarkupString)htmlcode)</div>;
-}
+		=>
+	@<div class="main-menu-item" @onclick="() => { BlazorSession.Current.ShowDialog<T>(null); }">
+		@((MarkupString)htmlcode)
+	</div>
+	;
 }
 
 <div style="display:flex;flex-direction:row;flex-wrap:wrap;">
 
-	@(RenderItem<Demos.Notepad.Notepad>("Notepad"));
+	@(RenderItem<Demos.Notepad.Notepad>("Notepad"))
+
+	@(RenderItem<Demos.RegView.RegView>("RegView"))
+
 
 
 </div>

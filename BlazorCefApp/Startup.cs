@@ -26,7 +26,16 @@ namespace BlazorCefApp
 		public void ConfigureServices(IServiceCollection services)
 		{
 			services.AddRazorPages();
-			services.AddServerSideBlazor();
+			services.AddServerSideBlazor().AddCircuitOptions(opt=>
+			{
+				//always send detailed error to browser console
+				opt.DetailedErrors = true;
+				opt.DisconnectedCircuitMaxRetained = 999999;
+				opt.DisconnectedCircuitRetentionPeriod = TimeSpan.FromMilliseconds(10);
+			}).AddHubOptions(opt =>
+			{
+				opt.MaximumReceiveMessageSize = 64 * 1024 * 1024;
+			});
 
 			services.AddHttpContextAccessor();
 

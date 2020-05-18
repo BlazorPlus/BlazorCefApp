@@ -27,7 +27,13 @@
 			{
 				form.Controls.Add(player);
 
-				System.Threading.SynchronizationContext.Current.Post(delegate
+				form.Text = "Media Player 6.4";
+				form.MinimumSize = new System.Drawing.Size(400, 300);
+				form.Size = new System.Drawing.Size(800, 600);
+				form.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
+
+				//use SetTimeout to make sure the form has loaded
+				CefLite.CefWin.SetTimeout(100,delegate
 				{
 					try
 					{
@@ -37,14 +43,11 @@
 					catch (Exception x)
 					{
 						Console.WriteLine(x);
+						bses.ConsoleError(x.ToString());
 					}
 					//form.WindowState = System.Windows.Forms.FormWindowState.Maximized;
-				}, null);
+				});
 
-				form.Text = "Media Player 6.4";
-				form.MinimumSize = new System.Drawing.Size(400, 300);
-				form.Size = new System.Drawing.Size(800, 600);
-				form.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
 				form.ShowDialog(browser.FindForm());
 			}
 		});
@@ -69,24 +72,26 @@
 			{
 				form.Controls.Add(player);
 
-				System.Threading.SynchronizationContext.Current.Post(delegate
+				form.Text = "Media Player 7+";
+				form.MinimumSize = new System.Drawing.Size(400, 300);
+				form.Size = new System.Drawing.Size(800, 600);
+				form.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
+
+				//use SetTimeout to make sure the form has loaded
+				CefLite.CefWin.SetTimeout(100, delegate
 				{
 					try
 					{
-						//TODO: sometimes throw exception , method not found
 						type.InvokeMember("URL", System.Reflection.BindingFlags.SetProperty, null, player.GetOcx(), new object[] { mp4file });
 					}
 					catch (Exception x)
 					{
 						Console.WriteLine(x);
+						bses.ConsoleError(x.ToString());
 					}
 					//form.WindowState = System.Windows.Forms.FormWindowState.Maximized;
-				}, null);
+				});
 
-				form.Text = "Media Player 7+";
-				form.MinimumSize = new System.Drawing.Size(400, 300);
-				form.Size = new System.Drawing.Size(800, 600);
-				form.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
 				form.ShowDialog(browser.FindForm());
 			}
 

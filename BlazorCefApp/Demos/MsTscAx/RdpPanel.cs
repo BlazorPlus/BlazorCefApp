@@ -22,6 +22,7 @@ namespace BlazorCefApp.Demos.MsTscAx
 		protected override void OnHandleDestroyed(EventArgs e)
 		{
 			base.OnHandleDestroyed(e);
+			axhost?.Dispose();
 		}
 
 		RdpAxHost axhost;

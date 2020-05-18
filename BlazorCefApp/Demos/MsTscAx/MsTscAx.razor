@@ -1,0 +1,320 @@
+﻿@inherits DemoDialogBase
+
+@using WF = System.Windows.Forms
+
+@implements IDisposable
+
+@inject BlazorSession bses
+
+@code
+{
+	bool _disposed = false;
+	void IDisposable.Dispose()
+	{
+		_disposed = true;
+		if (panels.Count == 0)
+			return;
+		CefLite.CefWin.InvokeInAppThread(delegate
+		{
+			foreach (var p in panels.ToArray())
+			{
+				ClosePanel(p);
+			}
+		});
+	}
+
+	void ClosePanel(RdpPanel panel)
+	{
+		if (!panels.Contains(panel))
+			return;
+		panels.Remove(panel);
+		if (!_disposed) bses.InvokeInRenderThread(StateHasChanged);
+		CefLite.CefWin.InvokeInAppThread(delegate
+		{
+			panel.Dispose();
+		});
+	}
+
+	public override void OnCancel(string mode)
+	{
+		if (panels.Count == 0)
+		{
+			this.Close();
+			return;
+		}
+		bses.ConfirmYes("Quit", "There're " + panels.Count + " sessions , do you want to quit?", () =>
+		{
+			this.Close();
+		});
+	}
+
+	void HidePanels()
+	{
+		CefLite.CefWin.InvokeInAppThread(delegate
+		{
+			panels.ForEach(v => v.Hide());
+		});
+	}
+	void SwitchPanel(RdpPanel panel)
+	{
+		CefLite.CefWin.InvokeInAppThread(delegate
+		{
+			foreach (var p in panels)
+				if (p != panel)
+					p.Hide();
+			panel.Show();
+		});
+	}
+
+	public string JsonFilePath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "MsTscAx.json");
+
+	public class MsTscItem
+	{
+		public string Server { get; set; }
+		public string Description { get; set; }
+	}
+	public class MsTscConfig
+	{
+		public List<MsTscItem> Items { get; set; } = new List<MsTscItem>();
+	}
+
+	MsTscConfig _config;
+	public MsTscConfig GetConfig()
+	{
+		if (_config != null)
+			return _config;
+
+		if (System.IO.File.Exists(JsonFilePath))
+		{
+			try
+			{
+				_config = System.Text.Json.JsonSerializer.Deserialize<MsTscConfig>(System.IO.File.ReadAllText(JsonFilePath));
+			}
+			catch (Exception x)
+			{
+				bses.Alert("Error", x.ToString());
+			}
+		}
+
+		if (_config == null)
+			_config = new MsTscConfig();
+
+		return _config;
+	}
+
+	List<RdpPanel> panels = new List<RdpPanel>();
+
+
+	void ShowItem(MsTscItem item)
+	{
+		bses.RunBrowser(browser =>
+		{
+			RdpPanel panel = panels.FirstOrDefault(v => v.Tag == item);
+			if (panel != null)
+			{
+				panel.Show();
+				bses.InvokeInRenderThread(StateHasChanged);
+				return;
+			}
+
+			var form = browser.FindForm();
+			panel = new RdpPanel();
+			panel.Anchor = WF.AnchorStyles.Top | WF.AnchorStyles.Bottom | WF.AnchorStyles.Left | WF.AnchorStyles.Right;
+			panel.Top = 30;
+			panel.Left = 0;
+			panel.Width = form.ClientSize.Width;
+			panel.Height = form.ClientSize.Height - panel.Top;
+
+			form.Controls.Add(panel);
+
+
+			panel.Tag = item;
+			panels.Add(panel);
+			panel.Disconnected += delegate
+			{
+				bses.Toast("panel.Disconnected");
+				ClosePanel(panel);
+			};
+
+			CefLite.CefWin.DoMessageLoopOnce();
+			panel.Connect(item.Server);
+			bses.InvokeInRenderThread(StateHasChanged);
+		});
+	}
+
+	string FixHost(string host)
+	{
+		if (host.Contains("://"))
+			host = host.Substring(host.IndexOf("://") + 3);
+		if (host.Contains("/"))
+			host = host.Substring(0, host.IndexOf("/"));
+		return host;
+	}
+
+	async Task AddNewItemAsync()
+	{
+		UIDialogOption opt = new UIDialogOption();
+		opt.Title = "Add Server";
+		opt.Message = "servername or servername:port";
+		opt.ValueValidator = (obj) =>
+		{
+			string str = Convert.ToString(obj)?.Trim();
+			if (string.IsNullOrEmpty(str))
+				return false;
+
+			str = FixHost(str);
+
+			int p = str.IndexOf(':');
+			int port = 3389;
+			if (p != -1)
+			{
+				if (!int.TryParse(str.Substring(p + 1), out port))
+				{
+					return false;
+				}
+				str = str.Substring(0, p);
+			}
+
+			if (string.IsNullOrEmpty(str))
+				return false;
+
+			return true;
+		};
+
+		string val = await bses.PromptAsync(opt);
+
+		if (string.IsNullOrEmpty(val))
+			return;
+
+		val = FixHost(val);
+
+		string valhost = val.Split(':')[0];
+		if (!System.Net.IPAddress.TryParse(valhost, out _))
+		{
+			try
+			{
+				await System.Net.Dns.GetHostEntryAsync(valhost);
+			}
+			catch (Exception x)
+			{
+				bses.Alert("Error", x.ToString());
+				return;
+			}
+		}
+
+
+		MsTscItem item = new MsTscItem() { Server = val };
+		var cfg = GetConfig();
+		cfg.Items.Add(item);
+		try
+		{
+			System.IO.File.WriteAllText(JsonFilePath, System.Text.Json.JsonSerializer.Serialize(cfg));
+		}
+		catch (Exception x)
+		{
+			bses.Alert("Error", x.ToString());
+		}
+	}
+
+}
+
+<style>
+	.mstscax {
+		padding-right: 20px;
+		padding-bottom: 20px;
+		display: flex;
+		flex-direction: row;
+		flex-wrap: wrap;
+	}
+
+	.mstscax-item {
+		width: 240px;
+		height: 155px;
+		margin-left: 20px;
+		margin-top: 20px;
+		border: 1px solid #ccc;
+		border-radius: 7px;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		box-shadow: 0 0 5px gray;
+	}
+
+	.mstscax-item-alive {
+		border-color: blue;
+	}
+
+	.mstscax-item:hover {
+		background-color: wheat;
+	}
+</style>
+
+<div class="dialog-content-full">
+
+	@if (panels.Any(v => v.Visible))
+	{
+		var fp = panels.First(v => v.Visible);
+
+
+		<div style="display:flex;flex-direction:row;">
+			<button @onclick="HidePanels">Switch</button>
+			<div style="flex:99999;text-align:center;padding:1px;">
+
+				@foreach (var panel in panels)
+				{
+					var item = (MsTscItem)panel.Tag;
+					if (panel == fp)
+					{
+						<button style="margin:0 8px;padding:0 8px" class="btn btn-outline-primary">@item.Server</button>
+					}
+					else
+					{
+						<button style="margin:0 8px;padding:0 8px" class="btn btn-light" @onclick="()=>SwitchPanel(panel)">@item.Server</button>
+					}
+				}
+
+			</div>
+			<button @onclick="()=>ClosePanel(fp)">Close</button>
+		</div>
+	}
+	else
+	{
+		<div style="display:flex;flex-direction:row;">
+			<button onclick="history.back()">Back</button>
+			<div style="flex:99999;text-align:center;padding:3px;">
+				Remote Desktop
+			</div>
+		</div>
+		<div style="flex:99999;padding:10px;overflow-y:scroll;border-top:1px solid gray;">
+			<div class="mstscax">
+
+				@foreach (MsTscItem item in GetConfig().Items)
+				{
+					var panel = panels.FirstOrDefault(v => v.Tag == item);
+					if (panel != null)
+					{
+						<div class="mstscax-item mstscax-item-alive" @onclick="() => ShowItem(item)">
+							<h5>@item.Server</h5>
+							<p>...</p>
+						</div>
+					}
+					else
+					{
+						<div class="mstscax-item" @onclick="() => ShowItem(item)">
+							<h5>@item.Server</h5>
+							<p>...</p>
+						</div>
+					}
+				}
+
+				<div class="mstscax-item" @onclick="AddNewItemAsync">
+					<h5>Add New Item</h5>
+					<p>...</p>
+				</div>
+
+			</div>
+		</div>
+	}
+</div>
+

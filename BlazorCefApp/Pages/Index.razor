@@ -1,10 +1,21 @@
 ﻿@page "/"
 
+@code{
+	void SetZoom(int val)
+	{
+		BlazorSession.Current.RunBrowser(browser =>
+		{
+			var host = browser.Agent.BrowserHost;
+			//wait CefLite 0.1.5
+		});
+	}
+}
+
 <div style="text-align:center;padding-top:18px;">
 	<h2>BlazorCefApp!</h2>
 	<p>
 		<a href="https://github.com/BlazorPlus/BlazorCefApp" target="_blank">https://github.com/BlazorPlus/BlazorCefApp</a>
-		<br/>
+		<br />
 		Run Blazor server side as a window application.
 		<br />
 		<button class="btn btn-info" style="width:100px" @onclick="()=>BlazorSession.Current.ShowDevTools()">DevTools</button>
@@ -13,6 +24,8 @@
 		<button class="btn btn-info" style="width:100px" @onclick="()=>CefLite.CefWin.QuitWindowsEventLoop()">CefQuit</button>
 		@*<button class="btn btn-info" style="width:100px" @onclick="()=>System.Windows.Forms.Application.Exit()">AppExit</button>*@
 
+		@*<button class="btn btn-info" style="width:100px" @onclick="()=>SetZoom(1)">Zoom+</button>
+			<button class="btn btn-info" style="width:100px" @onclick="()=>SetZoom(-1)">Zoom-</button>*@
 	</p>
 	<hr />
 </div>
@@ -22,8 +35,8 @@
 		where T : ComponentBase
 		=>
 	@<div class="main-menu-item" @onclick="() => { BlazorSession.Current.ShowDialog<T>(null); }">
-		 <div class="main-menu-item-title">@title</div>
-		 <div class="main-menu-item-comment">@comment</div>
+		<div class="main-menu-item-title">@title</div>
+		<div class="main-menu-item-comment">@comment</div>
 	</div>
 	;
 }
@@ -36,6 +49,7 @@
 	@(RenderItem<Demos.ExeInfo.ExeInfo>("ExeInfo", "Show more useful information"))
 	@(RenderItem<Demos.ProcList.ProcList>("ProcList", "Local Process GridView"))
 	@(RenderItem<Demos.PlayMp4.PlayMp4>("PlayMp4", "ActiveX MediaPlayer"))
+	@(RenderItem<Demos.MsTscAx.MsTscAx>("MsTscAx", "ActiveX RemoteDesktop"))
 
 
 </div>

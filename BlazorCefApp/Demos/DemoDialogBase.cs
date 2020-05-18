@@ -33,6 +33,10 @@ namespace BlazorCefApp.Demos
 		{
 			_dlg.CloseAnimate("dialog-slide-out", 200);
 		}
+		public void CloseWithoutAnimate()
+		{
+			_dlg.Close();
+		}
 
 		public virtual void OnCancel(string mode)
 		{

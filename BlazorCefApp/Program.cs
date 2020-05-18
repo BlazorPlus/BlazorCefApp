@@ -47,8 +47,8 @@ namespace BlazorCefApp
 			{
 				if (initState == CefInitState.Failed)
 				{
-					System.Windows.MessageBox.Show("Failed to start application\r\nCheck the github page about how to deploy the libcef.dll", "Error"
-					   , System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+					System.Windows.Forms.MessageBox.Show("Failed to start application\r\nCheck the github page about how to deploy the libcef.dll", "Error"
+					   , System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
 				}
 				return;
 			}
@@ -61,8 +61,8 @@ namespace BlazorCefApp
 			catch (Exception x)
 			{
 				Console.WriteLine(x);
-				System.Windows.MessageBox.Show("Failed to start service. Please try again. \r\n" + x.Message, "Error"
-					, System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+				System.Windows.Forms.MessageBox.Show("Failed to start service. Please try again. \r\n" + x.Message, "Error"
+					 , System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
 				CefWin.CefShutdown();
 				return;
 			}

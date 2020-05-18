@@ -1,10 +1,10 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
 	<PropertyGroup>
 		<TargetFramework>netcoreapp3.1</TargetFramework>
 		<OutputType>WinExe</OutputType>
-		<UseWPF>true</UseWPF>
 		<UseWindowsForms>true</UseWindowsForms>
+		<UseWPF>true</UseWPF>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -14,12 +14,18 @@
 
 	<ItemGroup>
 		<PackageReference Include="BlazorPlus" Version="1.1.27" />
-		<PackageReference Include="CefLiteCore" Version="0.1.2" />
+		<PackageReference Include="CefLiteCore" Version="0.1.4" />
 		<PackageReference Include="System.IO.Ports" Version="4.7.0" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<Folder Include="Data\" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Reference Include="mstscax_interop">
+	    <HintPath>D:\Temp\mstscax_interop.dll</HintPath>
+	  </Reference>
 	</ItemGroup>
 
 </Project>

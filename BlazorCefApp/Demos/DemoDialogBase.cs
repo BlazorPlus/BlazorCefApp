@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using BlazorPlus;
+using Microsoft.AspNetCore.Routing.Template;
+using Microsoft.AspNetCore.DataProtection;
 
 namespace BlazorCefApp.Demos
 {
@@ -23,9 +25,20 @@ namespace BlazorCefApp.Demos
 				_dlg.CancelHandler = mode =>
 				{
 					//mode : "ESC" or "BACK"
-					OnCancel(mode);
+					OnDialogCancel(mode);
 				};
+				_dlg.CloseCalled += _dlg_CloseCalled;
 			}
+
+		}
+
+		private void _dlg_CloseCalled(object sender, EventArgs e)
+		{
+			OnDialogClosed();
+		}
+
+		protected virtual void OnDialogClosed()
+		{
 
 		}
 
@@ -38,7 +51,7 @@ namespace BlazorCefApp.Demos
 			_dlg.Close();
 		}
 
-		public virtual void OnCancel(string mode)
+		protected virtual void OnDialogCancel(string mode)
 		{
 			Close();
 		}

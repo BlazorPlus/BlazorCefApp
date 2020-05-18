@@ -35,13 +35,17 @@
 		});
 	}
 
-	public override void OnCancel(string mode)
+	protected override void OnDialogCancel(string mode)
 	{
 		if (panels.Count == 0)
 		{
 			this.Close();
 			return;
 		}
+
+		if (panels.Any(v => v.Visible))
+			return;
+
 		bses.ConfirmYes("Quit", "There're " + panels.Count + " sessions , do you want to quit?", () =>
 		{
 			this.Close();

@@ -141,7 +141,7 @@
 		System.Diagnostics.Process.Start("Explorer", "/select, \""+currentFilePath+"\"");
 	}
 
-	public override void OnCancel(string mode)
+	protected override void OnDialogCancel(string mode)
 	{
 
 		if (string.IsNullOrWhiteSpace(currentTextCode) || originalTextCode == currentTextCode)

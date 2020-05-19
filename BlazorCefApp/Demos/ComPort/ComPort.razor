@@ -12,7 +12,7 @@
 	{
 		base.OnInitialized();
 		_sport.Encoding = System.Text.Encoding.UTF8;
-		_sport.ReadTimeout = 2000;
+		_sport.ReadTimeout = -1;
 		_sport.BaudRate = 115200;
 		_sport.PortName = System.IO.Ports.SerialPort.GetPortNames().OrderByDescending(v => v).First();
 	}

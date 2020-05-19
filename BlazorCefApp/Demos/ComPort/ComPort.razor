@@ -11,6 +11,7 @@
 	protected override void OnInitialized()
 	{
 		base.OnInitialized();
+		//NOTE: install System.Text.Encoding.CodePages for more Encoding : Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 		_sport.Encoding = System.Text.Encoding.UTF8;
 		_sport.ReadTimeout = -1;
 		_sport.BaudRate = 115200;
@@ -41,6 +42,10 @@
 
 		try
 		{
+			//wait UI Renderer show the msgpanel
+			//NOTE:PlayPortAsync is called by the button , so the rest code is running in renderer thread
+			await Task.Delay(100);
+
 			while (true)
 			{
 				int rc = await _sport.BaseStream.ReadAsync(buffer, buflen, buffer.Length - buflen);
@@ -90,7 +95,11 @@
 			_sport.Close();
 			StateHasChanged();
 		}
-
+		finally
+		{
+			//TODO: bug , if the unplug the device , it didn't release correctly
+			try { _sport.Close(); } catch { }
+		}
 	}
 
 	PlusControl msgpanel;

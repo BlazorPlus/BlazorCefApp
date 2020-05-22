@@ -2,7 +2,7 @@
 
 	<PropertyGroup>
 		<TargetFramework>netcoreapp3.1</TargetFramework>
-		<OutputType>WinExe</OutputType>
+		<OutputType>Exe</OutputType>
 		<UseWindowsForms>true</UseWindowsForms>
 		<UseWPF>true</UseWPF>
 	</PropertyGroup>
@@ -14,7 +14,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="BlazorPlus" Version="1.1.28" />
-		<PackageReference Include="CefLiteCore" Version="0.1.4" />
+		<PackageReference Include="CefLiteCore" Version="0.1.5" />
 		<PackageReference Include="System.IO.Ports" Version="4.7.0" />
 	</ItemGroup>
 

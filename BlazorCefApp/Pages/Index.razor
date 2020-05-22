@@ -6,7 +6,10 @@
 		BlazorSession.Current.RunBrowser(browser =>
 		{
 			var host = browser.Agent.BrowserHost;
-			//wait CefLite 0.1.5
+			double dv = host.GetZoomLevel() + val;
+			if (dv > 10) dv = 10;
+			if (dv < -10) dv = -10;
+			host.SetZoomLevel(dv);
 		});
 	}
 }
@@ -24,8 +27,8 @@
 		<button class="btn btn-info" style="width:100px" @onclick="()=>CefLite.CefWin.QuitWindowsEventLoop()">CefQuit</button>
 		@*<button class="btn btn-info" style="width:100px" @onclick="()=>System.Windows.Forms.Application.Exit()">AppExit</button>*@
 
-		@*<button class="btn btn-info" style="width:100px" @onclick="()=>SetZoom(1)">Zoom+</button>
-			<button class="btn btn-info" style="width:100px" @onclick="()=>SetZoom(-1)">Zoom-</button>*@
+		<button class="btn btn-info" style="width:100px" @onclick="()=>SetZoom(1)">Zoom+</button>
+			<button class="btn btn-info" style="width:100px" @onclick="()=>SetZoom(-1)">Zoom-</button>
 	</p>
 	<hr />
 </div>

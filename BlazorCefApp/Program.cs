@@ -1,16 +1,7 @@
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 
-using System.Diagnostics;
 using CefLite;
 
 namespace BlazorCefApp
@@ -69,6 +60,20 @@ namespace BlazorCefApp
 
 			CefWin.ApplicationHost = host;
 			CefWin.ApplicationTask = host.WaitForShutdownAsync(CefWin.ApplicationCTS.Token);
+
+			MyDownloadForm _mdf = null;
+			DownloadItem.ShowDownloadFormHandler = (parentForm) =>
+			{
+				if (_mdf == null || _mdf.IsDisposed)
+				{
+					_mdf = new MyDownloadForm();
+					_mdf.Show(parentForm);
+				}
+				else
+				{
+					CefWin.ActivateForm(_mdf);
+				}
+			};
 
 			ShowMainForm();
 

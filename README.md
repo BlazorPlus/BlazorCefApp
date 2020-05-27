@@ -4,6 +4,12 @@ Build Desktop application by CEF , Asp.Net Core , Blazor server side
 
 ![Screenshot](https://github.com/BlazorPlus/BlazorCefApp/raw/master/demoscreenshots/demo-index.png)
 
+
+# Compilation : 
+
+Add ref for mstscax_interop.dll from /dllrefs/, it's for the DEMO "RemoteDesktop" , I will put it into nuget later.
+
+
 # Now it works
 
 developer must copy the Release/Resources files from

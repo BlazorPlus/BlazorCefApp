@@ -14,7 +14,7 @@ namespace BlazorCefApp
 {
 	public partial class MyDownloadForm : Form
 	{
-		static public string TextFormTitle="MyDownloads";
+		static public string TextFormTitle = "MyDownloads";
 		static public string TextUrl = "Url";
 		static public string TextId = "Id";
 		static public string TextFileName = "File Name";
@@ -133,7 +133,7 @@ namespace BlazorCefApp
 			{
 				if (item.TotalBytes > 0)
 				{
-					progress = Math.Floor(100.0 * item.ReceivedBytes / (double)item.TotalBytes) + "%";
+					progress = Math.Floor(100.0 * item.ReceivedBytes / (double)item.TotalBytes) + "% " + FormatSize(item.ReceivedBytes);
 				}
 				else
 				{
@@ -154,7 +154,7 @@ namespace BlazorCefApp
 			}
 			else
 			{
-				progress = item.FullPath;
+
 			}
 
 			lvi.Tag = item;

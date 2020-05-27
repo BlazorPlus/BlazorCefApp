@@ -28,7 +28,7 @@
 		@*<button class="btn btn-info" style="width:100px" @onclick="()=>System.Windows.Forms.Application.Exit()">AppExit</button>*@
 
 		<button class="btn btn-info" style="width:100px" @onclick="()=>SetZoom(1)">Zoom+</button>
-			<button class="btn btn-info" style="width:100px" @onclick="()=>SetZoom(-1)">Zoom-</button>
+		<button class="btn btn-info" style="width:100px" @onclick="()=>SetZoom(-1)">Zoom-</button>
 	</p>
 	<hr />
 </div>
@@ -48,11 +48,14 @@
 
 	@(RenderItem<Demos.Notepad.Notepad>("Notepad","OpenFileDialog and SaveFileDialog"))
 	@(RenderItem<Demos.RegView.RegView>("RegView", "Local Registry and TreeView"))
-	@(RenderItem<Demos.ComPort.ComPort>("ComPort", "Serial Port for Hardware"))
-	@(RenderItem<Demos.ExeInfo.ExeInfo>("ExeInfo", "Show more useful information"))
 	@(RenderItem<Demos.ProcList.ProcList>("ProcList", "Local Process GridView"))
+	@(RenderItem<Demos.ComPort.ComPort>("ComPort", "Serial Port for Hardware"))
 	@(RenderItem<Demos.PlayMp4.PlayMp4>("PlayMp4", "ActiveX MediaPlayer"))
 	@(RenderItem<Demos.MsTscAx.MsTscAx>("MsTscAx", "ActiveX RemoteDesktop"))
+	@(RenderItem<Demos.ClipView.ClipView>("ClipView", "Clipboard Read Write"))
+	@(RenderItem<Demos.NtfyIcon.NtfyIcon>("NtfyIcon", "Windows Notify Icon"))
+	@(RenderItem<Demos.ExeInfo.ExeInfo>("ExeInfo", "More useful information"))
+	@(RenderItem<Demos.MoreCmds.MoreCmds>("MoreCmds", "More useful commands"))
 
 
 </div>

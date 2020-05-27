@@ -1,0 +1,52 @@
+﻿@inherits DemoDialogBase
+
+@using WF = System.Windows.Forms
+
+@implements IDisposable
+
+@inject BlazorSession bses
+
+@code
+{
+	System.Windows.Forms.NotifyIcon ni;
+
+	bool _disposed = false;
+	void IDisposable.Dispose()
+	{
+		_disposed = true;
+		if (ni != null)
+		{
+			ni.Dispose();
+		}
+	}
+}
+
+<h3 @onclick="Show">NtfyIcon</h3>
+
+@code {
+
+	void Show()
+	{
+		CefLite.CefWin.InvokeInAppThread(delegate
+		{
+			System.Drawing.Bitmap img = new System.Drawing.Bitmap(32, 32);
+			using (System.Drawing.Graphics g = System.Drawing.Graphics.FromImage(img))
+			{
+				g.FillEllipse(System.Drawing.Brushes.Red, 0, 0, 32, 32);
+				g.FillRectangle(System.Drawing.Brushes.Blue, 8, 8, 16, 16);
+			}
+
+			if (ni == null) ni = new System.Windows.Forms.NotifyIcon();
+			ni.Icon = System.Drawing.Icon.FromHandle(img.GetHicon());
+			ni.Visible = true;
+			ni.BalloonTipText = "OKOK";
+			ni.ShowBalloonTip(5000);
+			ni.ContextMenuStrip = new WF.ContextMenuStrip() { };
+			ni.ContextMenuStrip.Items.Add("Back", img, delegate
+			{
+				bses.EvalCode("history.back()");
+			});
+		});
+	}
+
+}

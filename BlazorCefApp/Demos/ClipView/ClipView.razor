@@ -1,0 +1,145 @@
+﻿@using System.Windows.Forms
+
+@inject BlazorSession bses
+
+@code {
+
+	int refreshcount = 0;
+
+	ClipboardStatus status = new ClipboardStatus();
+
+	class ClipboardStatus
+	{
+		public bool ContainsAudio;
+		public bool ContainsImage;
+		public bool ContainsFileDropList;
+		public bool ContainsText;
+		public bool ContainsHtml;
+		public bool ContainsRtf;
+		public string[] Formats;
+	}
+
+	void RefreshStatus()
+	{
+		refreshcount++;
+
+		CefLite.CefWin.InvokeInAppThreadAsync(delegate
+		{
+			status.ContainsAudio = Clipboard.ContainsAudio();
+			status.ContainsImage = Clipboard.ContainsImage();
+			status.ContainsFileDropList = Clipboard.ContainsFileDropList();
+			status.ContainsText = Clipboard.ContainsText(TextDataFormat.Text);
+			status.ContainsHtml = Clipboard.ContainsText(TextDataFormat.Html);
+			status.ContainsRtf = Clipboard.ContainsText(TextDataFormat.Rtf);
+			status.Formats = Clipboard.GetDataObject()?.GetFormats();
+			bses.InvokeInRenderThread(delegate
+			{
+				bses.SetTimeout(500, RefreshStatus);
+				StateHasChanged();
+			});
+		});
+	}
+
+	RenderFragment CreateDialogForImg(string url)
+	{
+		RenderFragment rf = __builder =>
+		{
+		<div onclick="history.back()" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center">
+			<img src="@url" style="max-width:80%;max-height:80%;" />
+		</div>;
+		};
+		return rf;
+	}
+
+	void ShowImage()
+	{
+		CefLite.CefWin.InvokeInAppThreadAsync(delegate
+		{
+			var img = Clipboard.GetImage();
+			bses.InvokeInRenderThread(delegate
+			{
+				if (img == null)
+				{
+					bses.Toast("No Image");
+					return;
+				}
+
+				System.IO.MemoryStream ms = new System.IO.MemoryStream();
+				img.Save(ms, System.Drawing.Imaging.ImageFormat.Jpeg);
+				var str = "data:image/jpeg;base64," + Convert.ToBase64String(ms.ToArray());
+
+
+				bses.ShowDialog(CreateDialogForImg(str));
+
+			});
+		});
+	}
+}
+
+@{
+	if(refreshcount==0)
+	{
+		bses.SetTimeout(1, RefreshStatus);
+	}
+}
+
+<style>
+	.clipview label {
+		display: inline-block;
+		width: 160px;
+	}
+</style>
+<div class="dialog-content-full">
+	<div style="display:flex;flex-direction:row;">
+		<button onclick="history.back()">Back</button>
+		<div style="flex:99999;text-align:center;padding:3px;">
+			ClipView
+		</div>
+	</div>
+	<div class="clipview" style="border-top:1px solid #666">
+		<div>
+			#@refreshcount
+		</div>
+		<div>
+			<label>ContainsAudio : </label>@(status.ContainsAudio?"Yes":"")
+		</div>
+		<div>
+			<label>ContainsImage : </label>@(status.ContainsImage?"Yes":"")
+			@if (status.ContainsImage)
+			{
+				<button @onclick="ShowImage">Show Image</button>
+			}
+		</div>
+		<div>
+			<label>ContainsFileDropList : </label>@(status.ContainsFileDropList?"Yes":"")
+		</div>
+		<div>
+			<label>ContainsText : </label>@(status.ContainsText?"Yes":"")
+		</div>
+		<div>
+			<label>ContainsHtml : </label>@(status.ContainsHtml?"Yes":"")
+		</div>
+		<div>
+			<label>ContainsRtf : </label>@(status.ContainsRtf?"Yes":"")
+		</div>
+
+		<div style="margin:8px 24px">
+			@{
+				if (status.Formats == null)
+				{
+					<div>No Formats</div>
+				}
+				else
+				{
+					foreach (string format in status.Formats)
+					{
+						<div>
+							Format : @format
+						</div>
+					}
+				}
+			}
+		</div>
+
+	</div>
+</div>

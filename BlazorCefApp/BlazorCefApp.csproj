@@ -13,8 +13,8 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="BlazorPlus" Version="1.1.28" />
-		<PackageReference Include="CefLiteCore" Version="0.1.5" />
+		<PackageReference Include="BlazorPlus" Version="1.1.31" />
+		<PackageReference Include="CefLiteCore" Version="0.1.6" />
 		<PackageReference Include="System.IO.Ports" Version="4.7.0" />
 	</ItemGroup>
 
@@ -24,7 +24,7 @@
 
 	<ItemGroup>
 	  <Reference Include="mstscax_interop">
-	    <HintPath>D:\Temp\mstscax_interop.dll</HintPath>
+	    <HintPath>..\dllrefs\mstscax_interop.dll</HintPath>
 	  </Reference>
 	</ItemGroup>
 

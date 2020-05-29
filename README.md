@@ -7,24 +7,24 @@ Build Desktop application by CEF , Asp.Net Core , Blazor server side
 
 # Compilation : 
 
-Add ref for mstscax_interop.dll from /dllrefs/, it's for the DEMO "RemoteDesktop" , I will put it into nuget later.
+The path of mstscax_interop.dll is correct now.
 
 
 # Now it works
 
-developer must copy the Release/Resources files from
+#### developer must copy the Release/Resources files from
 
 http://opensource.spotify.com/cefbuilds/cef_binary_81.2.24%2Bgc0b313d%2Bchromium-81.0.4044.113_windows32_client.tar.bz2
 
-to app /chromium/ folder
+**to app /chromium/ folder**
 
-----
 
-CefLite source code : https://github.com/BlazorPlus/CefLite
+## CefLite source code : 
 
-----
+https://github.com/BlazorPlus/CefLite
 
-Ralative Links
+
+## Ralative Links
 
 https://github.com/aspnet/AspLabs/tree/master/src/ComponentsElectron
 

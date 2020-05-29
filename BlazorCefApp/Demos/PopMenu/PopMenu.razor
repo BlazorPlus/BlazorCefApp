@@ -1,0 +1,53 @@
+﻿@inherits DemoDialogBase
+
+@using WF = System.Windows.Forms
+
+@inject BlazorSession bses
+
+
+@code {
+
+	void Show()
+	{
+		bses.RunBrowser(browser =>
+		{
+
+			var menu = new System.Windows.Forms.ContextMenuStrip();
+			menu.Items.Add("MessageBox", null, delegate
+			{
+				System.Windows.MessageBox.Show("Hello World", "Hello");
+			});
+			menu.Items.Add("Alert", null, delegate
+			{
+				this.InvokeAsync(() =>
+				{
+					bses.Alert("Hello", "Hello World");
+				});
+			});
+			for(int i=0;i<30;i++)
+			{
+				menu.Items.Add("Long Menu " + i);
+			}
+
+			var form = browser.FindForm();
+			var pos = form.PointToClient(WF.Control.MousePosition);
+			menu.Show(form, pos);
+		});
+	}
+
+}
+
+<div class="dialog-content-full">
+	<div style="display:flex;flex-direction:row;">
+		<button onclick="history.back()">Back</button>
+		<div style="flex:99999;text-align:center;padding:3px;">
+			PopMenu
+		</div>
+	</div>
+	<div class="popmenu" style="flex:99999;padding:10px;overflow-y:scroll;border-top:1px solid gray;">
+
+
+		<button class="btn btn-primary" @onclick="Show">Test PopMenu</button>
+
+	</div>
+</div>

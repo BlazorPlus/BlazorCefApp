@@ -1,0 +1,214 @@
+﻿@inherits DemoDialogBase
+
+@using WF = System.Windows.Forms
+
+@inject BlazorSession bses
+
+
+@code {
+
+	protected override void OnDialogCancel(string mode)
+	{
+		bses.ConfirmYes("Quit?", "Back to main menu ?", () =>
+		{
+			this.Close();
+		});
+	}
+
+	int _timerid = 0;
+	string _lastcode;
+	PlusControl _textarea;
+	int _delay = 1000;
+	long _changetime = 0;
+
+	void select_ready(BlazorDomTree bdt)
+	{
+		void GetValue()
+		{
+			bdt.Root.EvalCallback((val, err) =>
+			{
+				_delay = Convert.ToInt32(val);
+			}, "return this.value");
+		}
+		bdt.Root.OnChange(delegate
+		{
+			GetValue();
+		});
+		GetValue();
+	}
+
+	void textarea_ready(BlazorDomTree bdt)
+	{
+		_lastcode = Normalize(DEMO_CODE);
+		_textarea = bdt.Root;
+		_textarea.Value = _lastcode;
+		_textarea.OnChanging(delegate
+		{
+			string taval = Normalize(_textarea.Value);
+			if (taval == _lastcode)
+				return;
+
+			_lastcode = taval;
+			_changetime = DateTime.Now.Ticks;
+
+			if (_delay == 0)
+			{
+				Compile();
+				ShowAssembly();
+				StateHasChanged();
+				return;
+			}
+
+			_compileError = null;
+			_ischanging = true;
+			Compile();
+			StateHasChanged();
+
+
+			if (_delay == -1)
+				return;
+			_timerid++;
+			int tid = _timerid;
+			bses.SetTimeout(_delay, delegate
+			{
+				if (tid != _timerid || !_ischanging) return;
+				_ischanging = false;
+				ShowAssembly();
+				StateHasChanged();
+			});
+		});
+
+		_ = Task.Run(delegate
+		{
+			try
+			{
+				Compile();
+				ShowAssembly();
+			}
+			catch (Exception x)
+			{
+				_compileError = x.Message;
+			}
+			this.InvokeAsync(StateHasChanged);
+		});
+	}
+
+	void ShowAssembly()
+	{
+		if (_lastasmdata == null)
+			return;
+		System.Reflection.Assembly newasm = System.Reflection.Assembly.Load(_lastasmdata);
+		OutputComponentType = newasm.GetType("HelloAssembly.MyComponent");
+	}
+
+	void Compile()
+	{
+		_lastasmdata = null;
+		_compileError = null;
+		try
+		{
+			_lastasmdata = CompileCode(_lastcode);
+		}
+		catch (Exception x)
+		{
+			_compileError = x.Message;
+		}
+	}
+
+	void ManualRun()
+	{
+		if (!_ischanging) return;
+		if (_delay != -1) return;
+		_ischanging = false;
+		ShowAssembly();
+		StateHasChanged();
+	}
+
+	bool _ischanging;
+
+	string _compileError;
+	byte[] _lastasmdata;
+
+	public Type OutputComponentType;
+
+}
+
+<div class="dialog-content-full">
+	<div style="display:flex;flex-direction:row;">
+		<button onclick="history.back()">Back</button>
+		<div style="flex:99999;text-align:center;padding:3px;">
+			RazorLive
+		</div>
+		<BlazorDomTree OnRootReady="select_ready" TagName="select">
+			<option value="-1">manual</option>
+			<option value="3000">3.0s</option>
+			<option value="2500">2.5s</option>
+			<option value="2000">2.0s</option>
+			<option value="1500">1.5s</option>
+			<option value="1000" selected>1.0s</option>
+			<option value="700">0.7s</option>
+			<option value="500">0.5s</option>
+			<option value="300">0.3s</option>
+			<option value="200">0.2s</option>
+			<option value="100">0.1s</option>
+			<option value="0">no delay</option>
+		</BlazorDomTree>
+	</div>
+	<div class="razorlive" style="flex:99999;overflow-y:hidden;display:flex;flex-direction:row;border-top:1px solid gray;">
+		<BlazorDomTree TagName="textarea" OnRootReady="textarea_ready" style="width:50%;height:100%;" spellcheck="false" />
+		<div style="width:50%;height:100%;position:relative;padding:12px;">
+			@if (OutputComponentType == null)
+			{
+				<div>Loading compiler...</div>
+			}
+			else
+			{
+				__builder.OpenComponent(1, OutputComponentType);
+				__builder.CloseComponent();
+			}
+			@if (_ischanging || _compileError != null)
+			{
+				string clsname = "animate-" + _changetime;
+
+				<div @onclick="ManualRun" style="position:absolute;left:0;top:0;width:100%;height:100%;background-color:rgba(128,128,128,0.5);display:flex;align-items:center;justify-content:center">
+					@if (_compileError != null)
+					{
+						<div style="text-align:center;padding:12px;">
+							<span style="color:red;font-size:12px;">@_compileError</span>
+						</div>
+					}
+					else if (_delay == -1)
+					{
+						<span class="oi oi-play-circle" style="font-size:32px;color:maroon;"></span>
+					}
+				</div>
+				@if (_compileError == null)
+				{
+					<style>
+					@@keyframes @clsname {
+						0% {
+							transform:scaleX(0);
+						}
+
+						100% {
+							transform: scaleX(1);
+						}
+					}
+					.@clsname {
+						height:2px;
+						background-color:green;
+						animation: @clsname @(_delay / 1000.0)s;
+					}
+					</style>
+					<div style="position:absolute;left:0;top:0;width:100%;height:5px;">
+						<div class="@clsname"></div>
+
+					</div>
+				}
+			}
+		</div>
+	</div>
+	<div>
+		<span style="color:red;font-size:12px;">@_compileError</span>
+	</div>
+</div>

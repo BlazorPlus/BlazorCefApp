@@ -17,10 +17,10 @@ namespace BlazorCefApp
 
 		public IHttpContextAccessor HttpContextAccessor { get; private set; }
 
-		public WebCustomizeSession(Microsoft.JSInterop.IJSRuntime jsr
+		public WebCustomizeSession(Microsoft.JSInterop.IJSRuntime jsr,NavigationManager nav
 			, IWebHostEnvironment whe
 			, IHttpContextAccessor hca)
-			: base(jsr)
+			: base(jsr,nav)
 		{
 			WebHostEnvironment = whe;
 			HttpContextAccessor = hca;

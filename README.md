@@ -14,7 +14,7 @@ The path of mstscax_interop.dll is correct now.
 
 #### developer must copy the Release/Resources files from
 
-http://opensource.spotify.com/cefbuilds/cef_binary_81.2.24%2Bgc0b313d%2Bchromium-81.0.4044.113_windows32_client.tar.bz2
+https://cef-builds.spotifycdn.com/cef_binary_81.3.10%2Bgb223419%2Bchromium-81.0.4044.138_windows32_client.tar.bz2
 
 **to app /chromium/ folder**
 
